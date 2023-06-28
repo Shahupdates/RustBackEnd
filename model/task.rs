@@ -8,7 +8,7 @@ pub enum TaskState {
     InProgress,
     Completed,
     Paused,
-    Failed
+    Failed,
 }
 
 #[derive(Serialize)]
@@ -18,7 +18,7 @@ pub struct Task {
     pub task_type: String,
     pub state: TaskState,
     pub source_file: String,
-    pub result_file: Option<String>
+    pub result_file: Option<String>,
 }
 
 impl Task {
@@ -29,12 +29,12 @@ impl Task {
             task_type,
             state: TaskState::NotStarted,
             source_file,
-            result_file: None
+            result_file: None,
         }
     }
 
     pub fn get_global_id(&self) -> String {
-        return format!("{}_{}", self.user_uuid, self.task_uuid);
+        format!("{}_{}", self.user_uuid, self.task_uuid)
     }
 
     pub fn can_transition_to(&self, state: &TaskState) -> bool {
