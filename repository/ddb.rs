@@ -23,9 +23,9 @@ fn required_item_value(key: &str, item: &HashMap<String, AttributeValue>) -> Res
 
 fn item_value(key: &str, item: &HashMap<String, AttributeValue>) -> Result<Option<String>, DDBError> {
     match item.get(key) {
-        Some(value) => match value.as_s() {
-            Ok(val) => Ok(Some(val.clone())),
-            Err(_) => Err(DDBError)
+        Some(value) => match value.s {
+            Some(val) => Ok(Some(val.clone())),
+            None => Err(DDBError)
         },
         None => Ok(None)
     }
@@ -61,13 +61,13 @@ impl DDBRepository {
     pub async fn put_task(&self, task: Task) -> Result<(), DDBError> {
         let mut request = self.client.put_item()
             .table_name(&self.table_name)
-            .item("pK", AttributeValue::S(String::from(task.user_uuid)))
-            .item("sK", AttributeValue::S(String::from(task.task_uuid)))
-            .item("task_type", AttributeValue::S(String::from(task.task_type)))
+            .item("pK", AttributeValue::S(String::from(&task.user_uuid)))
+            .item("sK", AttributeValue::S(String::from(&task.task_uuid)))
+            .item("task_type", AttributeValue::S(String::from(&task.task_type)))
             .item("state", AttributeValue::S(task.state.to_string()))
-            .item("source_file", AttributeValue::S(String::from(task.source_file)));
+            .item("source_file", AttributeValue::S(String::from(&task.source_file)));
         
-        if let Some(result_file) = task.result_file {
+        if let Some(result_file) = &task.result_file {
             request = request.item("result_file", AttributeValue::S(String::from(result_file)));
         }
 
@@ -78,9 +78,9 @@ impl DDBRepository {
     }
 
     pub async fn get_task(&self, task_id: String) -> Option<Task> {
-        let tokens:Vec<String> = task_id
+        let tokens: Vec<String> = task_id
             .split("_")
-            .map(|x| String::from(x))
+            .map(String::from)
             .collect();
         let user_uuid = AttributeValue::S(tokens[0].clone());
         let task_uuid = AttributeValue::S(tokens[1].clone());
@@ -96,21 +96,13 @@ impl DDBRepository {
             .send()
             .await;
 
-        return match res {
+        match res {
             Ok(output) => {
-                match output.items {
-                    Some(items) => {
-                        let item = &items.first()?;
-                        error!("{:?}", &item);
-                        match item_to_task(item) {
-                            Ok(task) => Some(task),
-                            Err(_) => None
-                        }
-                    },
-                    None => {
-                        None
-                    }
-                }
+                output.items.and_then(|items| {
+                    let item = items.first()?;
+                    error!("{:?}", item);
+                    item_to_task(item).ok()
+                })
             },
             Err(error) => {
                 error!("{:?}", error);
