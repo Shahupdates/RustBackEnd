@@ -7,14 +7,14 @@ ActixWebTaskService is a task management system built with Actix Web and AWS's D
 
 ## Features
 
-- **Task Creation**: Submit a new task with a user ID, task type, and source file.
-- **Task Retrieval**: Get the details of an existing task using its global ID.
-- **Task State Transition**: Transition the state of an existing task to a new state.
+- Task Creation: Submit a new task with a user ID, task type, and source file.
+- Task Retrieval: Get the details of an existing task using its global ID.
+- Task State Transition: Transition the state of an existing task to a new state.
 
 ## API Endpoints
 
-- `GET /task/{task_global_id}`: Retrieves a task using its global ID.
-- `POST /task`: Submits a new task with a user ID, task type, and source file.
+- GET `/task/{task_global_id}`: Retrieves a task using its global ID.
+- POST `/task`: Submits a new task with a user ID, task type, and source file.
 
 ## Task States
 
@@ -32,8 +32,5 @@ The system has a well-defined set of errors, each with its own HTTP status code.
 
 To run the application, use the following command:
 
-```bash
+```shell
 cargo run
-```
-
-The application will start on http://127.0.0.1:80.
